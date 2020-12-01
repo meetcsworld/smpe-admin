@@ -12,10 +12,9 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import marchsoft.bean.FileProperties;
+import marchsoft.config.bean.FileProperties;
 import marchsoft.enums.ResultEnum;
 import marchsoft.exception.BadRequestException;
-import marchsoft.exception.EntityNotFoundException;
 import marchsoft.modules.security.service.OnlineUserService;
 import marchsoft.modules.security.service.UserCacheClean;
 import marchsoft.modules.system.entity.Job;
@@ -23,6 +22,8 @@ import marchsoft.modules.system.entity.Role;
 import marchsoft.modules.system.entity.User;
 import marchsoft.modules.system.entity.bo.UserBO;
 import marchsoft.modules.system.entity.dto.*;
+import marchsoft.modules.system.mapper.JobMapper;
+import marchsoft.modules.system.mapper.RoleMapper;
 import marchsoft.modules.system.mapper.UserMapper;
 import marchsoft.modules.system.service.IUserService;
 import marchsoft.modules.system.service.mapstruct.UserMapStruct;
@@ -61,6 +62,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     private final OnlineUserService onlineUserService;
     private final UserCacheClean userCacheClean;
     private final FileProperties fileProperties;
+    private final JobMapper jobMapper;
 
     /**
      * description:根据用户名查用户id
@@ -76,7 +78,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         Long id = userMapper.findUserIdByName(username);
         if (ObjectUtil.isEmpty(id)) {
             log.error("【查询用户id失败】用户名不存在。用户名：" + username);
-            throw new BadRequestException(ResultEnum.USER_NOT_EXIST);
         }
         return id;
     }
@@ -94,11 +95,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     @Transactional(rollbackFor = Exception.class)
     public UserBO findUserDetailById(Long id) {
         UserBO userBO = userMapper.findUserDetailById(id);
-        if (userBO == null) {
-            throw new EntityNotFoundException(User.class, "id", id.toString());
-        } else {
-            return userBO;
+        if (ObjectUtil.isNull(userBO)) {
+            throw new BadRequestException(ResultEnum.DATA_NOT_FOUND);
         }
+        return userBO;
     }
 
     /**
@@ -112,9 +112,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     @Override
     public List<UserDTO> queryUserDetailsList(UserQueryCriteria criteria) {
         List<UserBO> userList = userMapper.queryUserDetailsList(buildUserQueryCriteria(criteria));
-        if (CollectionUtil.isEmpty(userList)) {
-            throw new BadRequestException(ResultEnum.DATA_NOT_FOUND);
-        }
         return userMapStruct.toDto(userList);
     }
 
@@ -133,12 +130,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         IPage<UserBO> userPage = userMapper.queryUserDetailsListPage(buildUserQueryCriteria(criteria), page);
         System.out.println(userPage.getRecords());
         List<UserDTO> userDTOList = userMapStruct.toDto(userPage.getRecords());
-
-        IPage<UserDTO> userDtoPage = PageUtil.toMapStructPage(userPage, userDTOList);
-        if (CollectionUtil.isEmpty(userDtoPage.getRecords())) {
-            throw new BadRequestException(ResultEnum.DATA_NOT_FOUND);
-        }
-        return userDtoPage;
+        return PageUtil.toMapStructPage(userPage, userDTOList);
     }
 
     /**
@@ -185,7 +177,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         if (CollectionUtil.isEmpty(userDTOList)) {
             throw new BadRequestException(ResultEnum.FILE_DOWNLOAD_FAIL_NOT_DATA);
         }
-
 
         List<Map<String, Object>> list = new ArrayList<>();
         for (UserDTO userDTO : userDTOList) {
@@ -319,7 +310,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
             }
         }
         if (! CollectionUtils.isEqualCollection(jobIds, userInsertOrUpdateDTO.getJobs())) {
-            Integer count = userMapper.delUserAtJob(userInsertOrUpdateDTO.getId());
+            Integer count = jobMapper.delUserAtJob(userInsertOrUpdateDTO.getId());
             Integer count2 = userMapper.saveUserAtJob(userInsertOrUpdateDTO.getId(),
                     userInsertOrUpdateDTO.getJobs());
             if (count <= 0 && count2 <= 0) {
@@ -365,7 +356,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         }
         String username = user.getUsername();
         if (ObjectUtil.isNull(user)) {
-            throw new EntityNotFoundException(User.class, "username", username);
+            throw new BadRequestException(ResultEnum.USER_NOT_EXIST);
         }
         flushCache(username);
         Map<String, String> map = new HashMap<>(1);

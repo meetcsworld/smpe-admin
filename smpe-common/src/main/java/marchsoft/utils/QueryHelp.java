@@ -18,11 +18,12 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
- * description:mybatis查询辅助工具
+ * description:mybatis查询辅助工具（暂时禁用）
  *
  * @author RenShiWei
  * Date: 2020/11/19 9:20
  */
+@Deprecated
 @Slf4j
 public class QueryHelp {
 
@@ -192,7 +193,7 @@ public class QueryHelp {
     }
 
     public static List<Field> getAllFields(Class<?> clazz) {
-//        @Todo 过滤无关字段
+        //需要过滤无关字段（暂时无用）
         List<Field> fields = null;
         if (clazz != null) {
             if (FIELD_CACHE.containsKey(clazz.getName())) {
@@ -210,6 +211,7 @@ public class QueryHelp {
     }
 }
 
+@Deprecated
 @Data
 @AllArgsConstructor
 class SmpeField {

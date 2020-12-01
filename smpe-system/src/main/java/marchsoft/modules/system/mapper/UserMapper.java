@@ -195,7 +195,7 @@ public interface UserMapper extends BaseMapper<User> {
             "</foreach>" +
             "</script>"
     })
-    Integer countByUserByRoleIds(Set<Long> roleIds);
+    Integer countByUserByRoleIds(@Param("roleIds") Set<Long> roleIds);
 
     /**
      * 根据岗位查询(验证此job是否被用户关联)
@@ -203,8 +203,13 @@ public interface UserMapper extends BaseMapper<User> {
      * @param ids /
      * @return /
      */
-    @Select("SELECT count(1) FROM sys_user u, sys_users_jobs j WHERE u.user_id = j.user_id AND j.job_id IN (${ids})")
-    int countByJobs(String ids);
+    @Select("<script>" +
+            "SELECT count(1) FROM sys_user u, sys_users_jobs j WHERE u.user_id = j.user_id AND j.job_id IN " +
+            "<foreach collection='ids' item='item' index='index' open='(' separator=',' close=')'> " +
+            "#{item}" +
+            "</foreach>" +
+            "</script>")
+    int countByJobs(@Param("ids") Set<Long> ids);
 
     /*
         -----------------------以下方法暂未使用，暂未进行修改和审核----------------------------

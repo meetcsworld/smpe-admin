@@ -5,8 +5,10 @@ import lombok.Data;
 import java.time.LocalDateTime;
 
 /**
- * @author Zheng Jie
- * @date 2019-03-25
+ * description:DeptQueryCriteria
+ *
+ * @author RenShiWei
+ * Date: 2020/11/24 17:26
  */
 @Data
 public class DeptQueryCriteria {
@@ -26,10 +28,6 @@ public class DeptQueryCriteria {
      */
     private Long pid;
 
-    /**
-     * 父部门id是否为空
-     */
-//    private Boolean pidIsNull;
 
     /**
      * 开始时间

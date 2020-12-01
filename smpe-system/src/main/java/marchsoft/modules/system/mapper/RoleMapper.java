@@ -42,7 +42,7 @@ public interface RoleMapper extends BaseMapper<Role> {
             @Result(column = "role_id", property = "menus",
                     many = @Many(select = "marchsoft.modules.system.mapper.MenuMapper.findByRoleId",
                             fetchType = FetchType.EAGER)),
-            @Result(column = "dept_id", property = "depts",
+            @Result(column = "role_id", property = "depts",
                     many = @Many(select = "marchsoft.modules.system.mapper.DeptMapper.findByRoleId",
                             fetchType = FetchType.EAGER))
     })
@@ -67,7 +67,7 @@ public interface RoleMapper extends BaseMapper<Role> {
                     many = @Many(select = "marchsoft.modules.system.mapper.DeptMapper.findByRoleId",
                             fetchType = FetchType.EAGER))
     })
-    List<RoleBO> findRoleDetailAll(@Param(Constants.WRAPPER) LambdaQueryWrapper<Role> queryWrapper);
+    List<RoleBO> findRoleDetailAllPage(@Param(Constants.WRAPPER) LambdaQueryWrapper<Role> queryWrapper);
 
     /**
      * description:查询所有角色详细信息（包含角色对应的菜单、部门、用户），可分页
@@ -89,7 +89,8 @@ public interface RoleMapper extends BaseMapper<Role> {
                     many = @Many(select = "marchsoft.modules.system.mapper.DeptMapper.findByRoleId",
                             fetchType = FetchType.EAGER))
     })
-    IPage<RoleBO> findRoleDetailAll(@Param(Constants.WRAPPER) LambdaQueryWrapper<Role> queryWrapper, IPage<Role> page);
+    IPage<RoleBO> findRoleDetailAllPage(@Param(Constants.WRAPPER) LambdaQueryWrapper<Role> queryWrapper,
+                                        IPage<Role> page);
 
     /**
      * description:通过用户id查询角色（只有角色信息）
@@ -217,6 +218,6 @@ public interface RoleMapper extends BaseMapper<Role> {
      * @author RenShiWei
      * Date: 2020/11/28 16:57
      */
-    @Delete("DELETE FROM sys_roles_menus WHERE menu_id = ${id}")
+    @Delete("DELETE FROM sys_roles_menus WHERE menu_id = ${menuId}")
     Integer untiedMenu(Long menuId);
 }

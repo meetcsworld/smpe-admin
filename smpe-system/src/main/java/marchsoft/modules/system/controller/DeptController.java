@@ -2,11 +2,12 @@ package marchsoft.modules.system.controller;
 
 
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.util.ObjectUtil;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import marchsoft.bean.PageVO;
+import marchsoft.base.PageVO;
 import marchsoft.exception.BadRequestException;
 import marchsoft.modules.system.entity.Dept;
 import marchsoft.modules.system.entity.dto.DeptDTO;
@@ -76,7 +77,8 @@ public class DeptController {
     @PreAuthorize("@smpe.check('dept:add')")
     public Result<Object> create(@RequestBody Dept dept) {
         log.info("【新增部门 /api/dept】操作人userId:" + SecurityUtils.getCurrentUserId() + "; 新增部门实体= " + dept);
-        if (dept.getId() != null) {
+        if (ObjectUtil.isNotNull(dept.getId())) {
+            log.error("【新增部门失败】操作人userId:" + SecurityUtils.getCurrentUserId() + "; 新增部门实体默认id应该为空，dept：" + dept);
             throw new BadRequestException("A new " + ENTITY_NAME + " cannot already have an ID");
         }
         deptService.create(dept);
